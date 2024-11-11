@@ -92,8 +92,9 @@ class MusicPiece:
 
         time = 0
         for pitch, duration in self.notes:
-            track.append(mido.Message('note_on', note = pitch + self.base_pitch, velocity=64, time=1))
-            track.append(mido.Message('note_off', note = pitch + self.base_pitch, velocity=64, time=int(duration * self.pace * 480)))  # 480 ticks per beat
+            note_use = np.clip(pitch + self.base_pitch, 0, 127) 
+            track.append(mido.Message('note_on', note = note_use, velocity=64, time=1))
+            track.append(mido.Message('note_off', note = note_use, velocity=64, time=int(duration * self.pace * 480)))  # 480 ticks per beat
 
         mid.save(filename)
         

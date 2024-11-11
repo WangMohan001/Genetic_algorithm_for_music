@@ -12,7 +12,7 @@ import random
 def main():
     json_path = "C:\\Users\\dcyy8\\Documents\\courses\\musicmath\\Genetic_algorithm_for_music\\genetic\\configs\\config_algorithm.json"
     
-    genetic_algorithm = Genetic_algorithm(NRoundTerminator(10), Fitness_example(), Mutate_example(), Crossover_example(), Initial_example(), json_path)
+    genetic_algorithm = Genetic_algorithm(NRoundTerminator(5), Fitness_example(), Mutate_example(), Crossover_example(), Initial_example(), json_path)
     best, all = genetic_algorithm.simulate()
     print(best)
     best.output_midi("result.midi", "violin")
