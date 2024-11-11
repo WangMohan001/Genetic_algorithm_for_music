@@ -1,0 +1,98 @@
+import numpy as np
+import mido
+from mido import MidiFile, MidiTrack, Message
+from midi2audio import FluidSynth
+
+class MusicPiece:
+    def __init__(self, length: int, pace: float, base_pitch: int =60):
+        self.length = length
+        self.pace = pace
+        self.base_pitch = base_pitch
+        self.notes = np.zeros((length, 2), dtype=int) # 2 columns: pitch and duration
+    
+    def get_length(self):
+        return self.length
+    
+    def get_pace(self):
+        return self.pace
+    
+    def get_base_pitch(self):
+        return self.base_pitch
+    
+    def get_notes(self):
+        return self.notes
+
+    # append another music piece to the end of the current music piece
+    def append(self, music_piece: 'MusicPiece'):
+        self.notes = np.append(self.notes, music_piece.get_notes(), axis=0)
+        self.length += music_piece.length
+
+    # add a note to the music piece
+    def add_note(self, pitch: int, duration: int = 1):
+        self.notes = np.append(self.notes, [[pitch, duration]], axis=0)
+        self.length += 1
+
+    # retrograde the music piece(playing the music piece in reverse order)
+    def retrograde(self)-> 'MusicPiece':
+        music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
+        music_piece.notes = np.flip(self.notes, axis=0)
+        return music_piece
+
+    # invert the music piece(playing the music piece upside down, i.e., the pitch of the notes are mirrored around the base pitch)
+    def invert(self)-> 'MusicPiece':
+        music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
+        music_piece.notes = self.notes.copy()
+        music_piece.notes[:, 0] = 2 * self.base_pitch - music_piece.notes[:, 0]
+        return music_piece
+
+    # transpose the music piece by a given interval, i.e., shift the pitch of the notes by the given interval
+    def transpose(self, interval: int)-> 'MusicPiece':
+        music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
+        music_piece.notes = self.notes.copy()
+        music_piece.notes[:, 0] += interval
+        return music_piece
+
+    #retrograde and invert the music piece at the same time
+    def retrograde_invert(self)-> 'MusicPiece':
+        music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
+        music_piece.notes = np.flip(self.notes, axis=0)
+        music_piece.notes[:, 0] = 2 * self.base_pitch - music_piece.notes[:, 0]
+        return music_piece
+
+    # get a part of the music piece, starting from the start-th note and ending at the end-th note
+    def partof(self, start: int, end: int)-> 'MusicPiece':
+        music_piece = MusicPiece(end - start, self.pace, self.base_pitch)
+        music_piece.notes = self.notes[start:end]
+        return music_piece
+
+    # output the music piece to a MIDI file with the given filename and instrument
+    def output_midi(self, filename: str, instrument: str):
+        mid = mido.MidiFile()
+        track = mido.MidiTrack()
+        mid.tracks.append(track)
+
+        instrument_mapping = {
+            'piano': 0,     
+            'violin': 40,   
+            'guitar': 24,   
+            'flute': 73,     
+            'trumpet': 56,     
+            'oboe': 68,        
+            'harp': 46,     
+        }
+        
+        instrument_number = instrument_mapping.get(instrument.lower(), 0)
+
+        track.append(mido.Message('program_change', program=instrument_number))
+
+        time = 0
+        for pitch, duration in self.notes:
+            track.append(mido.Message('note_on', note = pitch + self.base_pitch, velocity=64, time=1))
+            track.append(mido.Message('note_off', note = pitch + self.base_pitch, velocity=64, time=int(duration * self.pace * 480)))  # 480 ticks per beat
+
+        mid.save(filename)
+        
+
+
+    
+        
