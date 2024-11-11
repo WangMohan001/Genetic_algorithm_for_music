@@ -4,8 +4,8 @@ import random
 
 #base class for crossover functions
 class Crossover(ABC):
-    def __init__(self, random_seed: int):
-        self.random_seed = random_seed
+    def __init__(self):
+        pass
 
     #crossover two music pieces
     @abstractmethod

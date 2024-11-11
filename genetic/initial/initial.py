@@ -7,5 +7,5 @@ class Initial(ABC):
         pass
     #generate a list of music pieces for the initial generation
     @abstractmethod
-    def generate(self, population_size:int, random_seed: int) -> [MusicPiece]:
+    def generate(self, population_size: int) -> [MusicPiece]:
         pass

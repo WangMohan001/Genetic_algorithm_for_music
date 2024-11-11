@@ -1,8 +1,8 @@
-from genetic.inherit.mutate import Mutate
+from genetic.inherit.crossover import Crossover
 from genetic.item.music_piece import MusicPiece
 
 import random
-class Crossover_example(Mutate):
+class Crossover_example(Crossover):
 
     def crossover(self, music_piece1: MusicPiece, music_piece2: MusicPiece) -> tuple[MusicPiece, MusicPiece]:
         #get the length of the music pieces

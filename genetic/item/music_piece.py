@@ -60,11 +60,16 @@ class MusicPiece:
         return music_piece
 
     # get a part of the music piece, starting from the start-th note and ending at the end-th note
-    def partof(self, start: int, end: int)-> 'MusicPiece':
+    def get_part(self, start: int, end: int)-> 'MusicPiece':
         music_piece = MusicPiece(end - start, self.pace, self.base_pitch)
         music_piece.notes = self.notes[start:end]
         return music_piece
 
+    def __str__(self):
+        ret = ""
+        for pitch, duration in self.notes:
+            ret += f"({pitch}, {duration}) "
+        return ret
     # output the music piece to a MIDI file with the given filename and instrument
     def output_midi(self, filename: str, instrument: str):
         mid = mido.MidiFile()

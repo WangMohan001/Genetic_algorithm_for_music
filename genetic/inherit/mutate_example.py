@@ -11,6 +11,6 @@ class Mutate_example(Mutate):
         elif rand < 0.6:
             return music_piece.invert()
         elif rand < 0.8:
-            return music_piece.transpose(random.randint(-4, 4))
+            return music_piece.transpose(random.randint(-2, 2))
         else:
             return music_piece.retrograde_invert()

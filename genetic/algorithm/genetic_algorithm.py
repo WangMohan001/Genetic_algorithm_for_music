@@ -4,8 +4,10 @@ from genetic.item.music_piece import MusicPiece
 from genetic.inherit.mutate import Mutate
 from genetic.inherit.crossover import Crossover
 from genetic.initial.initial import Initial
+from genetic.utils.utils import roulette_wheel_selection
 import random
 import json
+import numpy as np
 
 
 
@@ -18,8 +20,6 @@ class Genetic_algorithm:
         self.config_path = config_path
         self.config = None
         self.crossover = crossover
-        #load the configuration file
-        self.load_config()
         try:
             with open(config_path, 'r') as file:
                 self.config = json.load(file)
@@ -33,7 +33,7 @@ class Genetic_algorithm:
         #set random seed
         random.seed(self.random_seed)
         self.population_size = self.config.get('population_size', 100)
-        self.mutatoion_rate = self.config.get('mutation_rate', 0.1)
+        self.mutation_rate = self.config.get('mutation_rate', 0.1)
         self.discard_rate = self.config.get('discard_rate', 0.3)
         self.temperature = self.config.get('temperature', 1.0)
         self.temperature_decay = self.config.get('temperature_decay', 0.99)
@@ -41,7 +41,7 @@ class Genetic_algorithm:
 
     #generate the initial population
     def start(self):
-        self.population = self.initial.generate(self.population_size, self.random_seed)
+        self.population = self.initial.generate(self.population_size)
 
     #single iteration of the genetic algorithm
     def iteration(self, temperature: float):
@@ -49,22 +49,22 @@ class Genetic_algorithm:
         fitness = [self.fitness.evaluate(music_piece) for music_piece in self.population]
 
         #discard using reloulette wheel selection
-        selected_population = roulette_wheel_selection(self.population, fitness, int(population_size * (1 - discard_rate)), temperature)
+        selected_population = roulette_wheel_selection(self.population, fitness, int(self.population_size * (1 - self.discard_rate)), temperature)
 
         #crossover
         crossover_population = []
-        while len(crossover_population) < population_size - len(selected_population):
+        while len(crossover_population) < self.population_size - len(selected_population):
             parent1, parent2 = random.sample(selected_population, 2)
             child1, child2 = self.crossover.crossover(parent1, parent2)
             crossover_population.append(child1)
             crossover_population.append(child2)
         
         selected_population.extend(crossover_population)
-        selected_population = selected_population[:population_size]
+        selected_population = selected_population[:self.population_size]
 
         #mutate
         for i in range(len(selected_population)):
-            if random.random() < mutation_rate:
+            if random.random() < self.mutation_rate:
                 selected_population[i] = self.mutate.mutate(selected_population[i])
 
     def simulate(self):
@@ -77,7 +77,7 @@ class Genetic_algorithm:
             temperature *= self.temperature_decay
             fitness = [self.fitness.evaluate(music_piece) for music_piece in self.population]
             round_num += 1
-            if self.terminator.terminate(fitness, round_num):
+            if self.terminator.check_terminate(fitness, round_num):
                 break
             print(f"Round {round_num}, best fitness: {min(fitness)}")
         best = self.population[np.argmax(fitness)]

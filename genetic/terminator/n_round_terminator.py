@@ -4,4 +4,4 @@ class NRoundTerminator(Terminator):
         self.n_round = n_round
 
     def check_terminate(self, fitness:[float], generation:int)->bool:
-        return n_generation >= self.n_round
+        return generation >= self.n_round
