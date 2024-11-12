@@ -3,6 +3,7 @@ import numpy as np
 
 def midi_to_audio(sound_font: str, midi_file: str, mp3_file: str) -> None:
     FluidSynth(sound_font=sound_font).midi_to_audio(midi_file, mp3_file)
+    print(f"Audio file saved to {mp3_file}")
 
 
 def roulette_wheel_selection(population, fitness, m, temperature):

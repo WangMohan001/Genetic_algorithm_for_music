@@ -1,5 +1,5 @@
 {
-    "random_seed": 3,
+    "random_seed": 42,
     "population_size": 20,
     "mutation_rate": 0.1,
     "discard_rate": 0.3,

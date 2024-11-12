@@ -1,6 +1,7 @@
 import numpy as np
 import mido
 from mido import MidiFile, MidiTrack, Message
+import json
 
 class MusicPiece:
     def __init__(self, length: int, pace: float, base_pitch: int =60):
@@ -30,6 +31,11 @@ class MusicPiece:
     def add_note(self, pitch: int, duration: int = 1):
         self.notes = np.append(self.notes, [[pitch, duration]], axis=0)
         self.length += 1
+
+    #change average to base_pitch
+    def normalize(self):
+        tmp = int(np.mean(self.notes[:, 0]))
+        self.notes[:, 0] -= tmp
 
     # retrograde the music piece(playing the music piece in reverse order)
     def retrograde(self)-> 'MusicPiece':
@@ -70,22 +76,14 @@ class MusicPiece:
             ret += f"({pitch}, {duration}) "
         return ret
     # output the music piece to a MIDI file with the given filename and instrument
-    def output_midi(self, filename: str, instrument: str):
+    def output_midi(self, filename: str, instrument: str, instrument_json_path: str):
         mid = mido.MidiFile()
         track = mido.MidiTrack()
         mid.tracks.append(track)
 
-        instrument_mapping = {
-            'piano': 0,     
-            'violin': 40,   
-            'guitar': 24,   
-            'flute': 73,     
-            'trumpet': 56,     
-            'oboe': 68,        
-            'harp': 46,     
-        }
-        
-        instrument_number = instrument_mapping.get(instrument.lower(), 0)
+        with open(instrument_json_path, 'r') as f:
+            instrument_mapping = json.load(f)
+            instrument_number = instrument_mapping.get(instrument.lower(), 0)
 
         track.append(mido.Message('program_change', program=instrument_number))
 
