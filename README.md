@@ -5,7 +5,7 @@
    git clone https://github.com/username/project-name.git
     ```
 2. 配置Fluidsynth：
-   从https://github.com/FluidSynth/fluidsynth/releases 中下载，并将含有fluidsynth.exe的目录添加到环境变量中。
+   从https://github.com/FluidSynth/fluidsynth/releases 中找到对应的zip文件下载(如fluidsynth-2.4.0-win10-x64.zip)，并将含有fluidsynth.exe的目录添加到环境变量中。
 3. 进入项目目录，安装依赖项：
   ```bash
    pip install -r requirements.txt
@@ -14,6 +14,8 @@
    ```bash
    python -m genetic.main
    ```
+
+如果报fluidsynth相关的错且无法解决，则将mian.py中midi_to_audio相关语句删掉，生成midi文件后使用在线midi转音频，如https://www.freeconvert.com/midi-to-mp3 .
 ### 项目结构
 
 ```bash
