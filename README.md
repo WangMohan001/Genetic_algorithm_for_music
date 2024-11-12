@@ -36,7 +36,7 @@ genetic/
 |
 ├── /fitness                         # 适应度函数
 │   ├── fitness.py                   # 适应度函数的基类
-│   └── fitness_example.py           # 适应度函数的例子，fitness
+│   └── fitness_example.py           # 适应度函数的例子，继承自fitness
 |
 ├── /item                            # 对象
 │   └── music_piece.py               # 单旋律乐曲对象，用n*2的矩阵存储，第一列为音符值，第二列为时值
