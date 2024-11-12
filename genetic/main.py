@@ -41,7 +41,7 @@ def main():
     
     # 初始化遗传算法
     genetic_algorithm = Genetic_algorithm(
-        NRoundTerminator(5), 
+        NRoundTerminator(15), 
         Fitness_example(), 
         Mutate_example(), 
         Crossover_example(), 
@@ -51,7 +51,6 @@ def main():
     
     # 运行遗传算法
     best, all = genetic_algorithm.simulate()
-    best.normalize()
     # 输出最佳结果
     print(best)
     best.output_midi(output_midi, instrument, instrument_json_path)

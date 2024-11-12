@@ -4,7 +4,7 @@ CONFIG_PATH="genetic/configs/config_algorithm.json"
 SOUND_FONT="27.3mg_symphony_hall_bank.SF2"
 OUTPUT_MIDI="result.midi"
 OUTPUT_AUDIO="result.wav"
-INSTRUMENT="bassoon"
+INSTRUMENT="cello"
 INSTRUMENT_JSON_PATH="genetic/configs/instruments.json"
 
 echo "Using config file: $CONFIG_PATH"

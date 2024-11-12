@@ -47,7 +47,7 @@ class MusicPiece:
     def invert(self)-> 'MusicPiece':
         music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
         music_piece.notes = self.notes.copy()
-        music_piece.notes[:, 0] = 2 * self.base_pitch - music_piece.notes[:, 0]
+        music_piece.notes[:, 0] = music_piece.notes[:, 0]
         return music_piece
 
     # transpose the music piece by a given interval, i.e., shift the pitch of the notes by the given interval
@@ -61,7 +61,7 @@ class MusicPiece:
     def retrograde_invert(self)-> 'MusicPiece':
         music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
         music_piece.notes = np.flip(self.notes, axis=0)
-        music_piece.notes[:, 0] = 2 * self.base_pitch - music_piece.notes[:, 0]
+        music_piece.notes[:, 0] = - music_piece.notes[:, 0]
         return music_piece
 
     # get a part of the music piece, starting from the start-th note and ending at the end-th note
