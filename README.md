@@ -12,8 +12,9 @@
    ```
 4. 运行项目
    ```bash
-   python -m genetic.main
+   bash run.sh
    ```
+若要改遗传算法超参数，更改configs/config_algorithm.json; 支持所有乐器见configs/instruments.json; run.sh中包含输入、输出文件路径。
 
 如果报fluidsynth相关的错且无法解决，则将mian.py中midi_to_audio相关语句删掉，生成midi文件后使用在线midi转音频，如https://www.freeconvert.com/midi-to-mp3 .
 ### 项目结构
