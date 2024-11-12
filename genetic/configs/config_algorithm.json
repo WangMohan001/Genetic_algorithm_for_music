@@ -1,8 +1,9 @@
 {
-    "random_seed": 43,
+    "random_seed": 0,
     "population_size": 100,
     "mutation_rate": 0.2,
-    "discard_rate": 0.5,
+    "discard_rate": 0.4,
     "temperature": 1.0,
-    "temperature_decay": 0.99
+    "temperature_decay": 0.99,
+    "round_num" : 40
 }

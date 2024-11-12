@@ -37,6 +37,7 @@ class Genetic_algorithm:
         self.discard_rate = self.config.get('discard_rate', 0.3)
         self.temperature = self.config.get('temperature', 1.0)
         self.temperature_decay = self.config.get('temperature_decay', 0.99)
+        self.round_num = self.config.get('round_num', -1)
         self.population = []
 
     #generate the initial population
@@ -73,15 +74,23 @@ class Genetic_algorithm:
         temperature = self.temperature
         round_num = 0
         print("Generated initial population, start simulating")
-        while True:
-            self.iteration(temperature)
-            temperature *= self.temperature_decay
-            fitness = [self.fitness.evaluate(music_piece) for music_piece in self.population]
-            round_num += 1
-            if self.terminator.check_terminate(fitness, round_num):
-                break
-            print(f"Round {round_num}, best fitness: {max(fitness)}")
-        best = self.population[np.argmax(fitness)]
-        return best, self.population
+        if self.round_num != -1:
+            for i in range(self.round_num):
+                self.iteration(temperature)
+                fitness = [self.fitness.evaluate(music_piece) for music_piece in self.population]
+                print(f"Round {i}, best fitness: {max(fitness)}")
+            best = self.population[np.argmax(fitness)]
+            return best, self.population
+        else:
+            while True:
+                self.iteration(temperature)
+                temperature *= self.temperature_decay
+                fitness = [self.fitness.evaluate(music_piece) for music_piece in self.population]
+                round_num += 1
+                if self.terminator.check_terminate(fitness, round_num):
+                    break
+                print(f"Round {round_num}, best fitness: {max(fitness)}")
+            best = self.population[np.argmax(fitness)]
+            return best, self.population
 
 
