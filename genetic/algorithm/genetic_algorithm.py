@@ -66,6 +66,7 @@ class Genetic_algorithm:
         for i in range(len(selected_population)):
             if random.random() < self.mutation_rate:
                 selected_population[i] = self.mutate.mutate(selected_population[i])
+        self.population = selected_population
 
     def simulate(self):
         self.start()
@@ -79,7 +80,7 @@ class Genetic_algorithm:
             round_num += 1
             if self.terminator.check_terminate(fitness, round_num):
                 break
-            print(f"Round {round_num}, best fitness: {min(fitness)}")
+            print(f"Round {round_num}, best fitness: {max(fitness)}")
         best = self.population[np.argmax(fitness)]
         return best, self.population
 
