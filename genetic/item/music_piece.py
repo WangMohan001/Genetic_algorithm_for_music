@@ -1,7 +1,6 @@
 import numpy as np
 import mido
 from mido import MidiFile, MidiTrack, Message
-from midi2audio import FluidSynth
 
 class MusicPiece:
     def __init__(self, length: int, pace: float, base_pitch: int =60):
