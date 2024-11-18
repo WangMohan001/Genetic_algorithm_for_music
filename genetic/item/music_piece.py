@@ -4,11 +4,12 @@ from mido import MidiFile, MidiTrack, Message
 import json
 
 class MusicPiece:
-    def __init__(self, length: int, pace: float, base_pitch: int =60):
+    def __init__(self, length: int, pace: float, base_pitch: int =60, beat: int = 4):
         self.length = length
         self.pace = pace
         self.base_pitch = base_pitch
         self.notes = np.zeros((length, 2), dtype=int) # 2 columns: pitch and duration
+        self.beat = beat  # the number of beats in a bar
     
     def get_length(self):
         return self.length
@@ -21,6 +22,9 @@ class MusicPiece:
     
     def get_notes(self):
         return self.notes
+    
+    def get_beat(self):
+        return self.beat
 
     # append another music piece to the end of the current music piece
     def append(self, music_piece: 'MusicPiece'):
@@ -28,8 +32,14 @@ class MusicPiece:
         self.length += music_piece.length
 
     # add a note to the music piece
-    def add_note(self, pitch: int, duration: int = 1):
-        self.notes = np.append(self.notes, [[pitch, duration]], axis=0)
+    def add_note(self, pitch: int, duration: float = 1):
+        # pitch: the pitch of the note, an integer
+        # duration: the duration of the note, a float, representing the number of beats
+        self.notes = np.append(self.notes, [[pitch, duration]], axis=0) 
+        self.length += 1
+
+    def add_rest(self, duration: float = 1):
+        self.notes = np.append(self.notes, [[np.nan, duration]], axis=0)
         self.length += 1
 
     #change average to base_pitch
@@ -76,7 +86,7 @@ class MusicPiece:
             ret += f"({pitch}, {duration}) "
         return ret
     # output the music piece to a MIDI file with the given filename and instrument
-    def output_midi(self, filename: str, instrument: str, instrument_json_path: str):
+    def output_midi(self, filename: str, instrument: str, instrument_json_path: str, volume: int = 127):
         mid = mido.MidiFile()
         track = mido.MidiTrack()
         mid.tracks.append(track)
@@ -86,12 +96,16 @@ class MusicPiece:
             instrument_number = instrument_mapping.get(instrument.lower(), 0)
 
         track.append(mido.Message('program_change', program=instrument_number))
+        track.append(mido.Message('control_change', control = 7, value = volume))
 
         time = 0
         for pitch, duration in self.notes:
-            note_use = np.clip(pitch + self.base_pitch, 0, 127) 
-            track.append(mido.Message('note_on', note = note_use, velocity=64, time=1))
-            track.append(mido.Message('note_off', note = note_use, velocity=64, time=int(duration * self.pace * 480)))  # 480 ticks per beat
+            if np.isnan(pitch):  #nan for rest
+                track.append(mido.Message('note_on', note=0, velocity=0, time=int(duration * self.pace * 480)))  # No note_on event for rest
+            else:
+                note_use = int(np.clip(pitch + self.base_pitch, 0, 127))
+                track.append(mido.Message('note_on', note = note_use, velocity = 64, time = 1))
+                track.append(mido.Message('note_off', note = note_use, velocity = 64, time = int(duration * self.pace * 480)))  # 480 ticks per beat
 
         mid.save(filename)
         

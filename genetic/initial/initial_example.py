@@ -13,13 +13,27 @@ class Initial_example(Initial):
         for i in range(population_size):
             use_major = random.random() < 0.5  
             length = random.randint(20, 40)
-            pace = random.random() * 0.2 + 0.3
+            pace = random.random() * 0.5 + 1
             music_piece = MusicPiece(0, pace)
             for i in range(length):
-                if use_major:
-                    note = major_scale[random.randint(0, len(major_scale) - 1)]
+                t = random.random()
+                if t < 0.4:
+                    duration = 1
+                elif t < 0.65:
+                    duration = 0.5
+                elif t < 0.85:
+                    duration = 2
+                elif t < 0.95:
+                    duration = 0.25
                 else:
-                    note = minor_scale[random.randint(0, len(minor_scale) - 1)]
-                music_piece.add_note(note, random.randint(1,4))
+                    duration = 4
+                if random.random() < 0.1:
+                    music_piece.add_rest(duration)
+                else:
+                    if use_major:
+                        note = major_scale[random.randint(0, len(major_scale) - 1)]
+                    else:
+                        note = minor_scale[random.randint(0, len(minor_scale) - 1)]
+                    music_piece.add_note(note, duration)
             population.append(music_piece)
         return population

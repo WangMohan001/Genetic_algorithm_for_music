@@ -7,4 +7,5 @@ class Fitness_example(Fitness):
         pass
 
     def evaluate(self, music_piece: MusicPiece) -> float:
-        return -abs(np.var(music_piece.get_notes()[:, 0]) - 10) - 0.2 * (music_piece.get_length() - 30)  * (music_piece.get_length() - 30)
+
+        return - (music_piece.get_length() - 30)  * (music_piece.get_length() - 30)
