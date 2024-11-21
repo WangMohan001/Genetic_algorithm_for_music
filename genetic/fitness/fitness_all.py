@@ -128,7 +128,7 @@ class Fitness_length(Fitness):
 
     def evaluate(self, music_piece: MusicPiece) -> float:
         return - (music_piece.get_length() - self.target) * (music_piece.get_length() - self.target)
-
+    
 class Fitness_all(Fitness):
     def __init__(self):
         self.fitnesses = [Fitness_neighbor(), Fitness_contour(), Fitness_base(), Fitness_scale(), Fitness_bar(), Fitness_rest(), Fitness_length()]
