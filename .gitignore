@@ -1,0 +1,4 @@
+*.pyc
+*.midi
+*.wav
+/genetic/__pycache__/
