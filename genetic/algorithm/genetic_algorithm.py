@@ -1,5 +1,6 @@
 from genetic.terminator.terminator import Terminator
 from genetic.fitness.fitness import Fitness
+from genetic.fitness.fitness_lsb import CompositeFitness2
 from genetic.item.music_piece import MusicPiece
 from genetic.inherit.mutate import Mutate
 from genetic.inherit.crossover import Crossover
