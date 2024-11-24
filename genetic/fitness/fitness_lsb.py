@@ -7,7 +7,7 @@ class CompositeFitness2(Fitness):
         super().__init__()
         self.LargestInterval = LargestInterval
         self.maxlen = Contor
-        self.Speed = Speed
+        self.speed = Speed
         self.ll = LongnoteLen
         
     def evaluate(self, music_piece):
@@ -15,6 +15,9 @@ class CompositeFitness2(Fitness):
         val = 0
         if len(notes) == 0:
             return float('-inf')  # 无效片段
+        for i in notes:
+            if np.isnan(i[0]):
+                return float('-inf')  # 无效片段
         val += self.IntervalPenalty(notes)
         val += self.PatternMatching(notes)
         val += self.Suspensions(notes)
@@ -23,7 +26,7 @@ class CompositeFitness2(Fitness):
         val += self.Longnote(notes)
         val += self.Contour(notes)
         val += self.Speed(notes)
-        return val
+        return val/600
     
     def ischord(self,note):
         '''
@@ -110,6 +113,7 @@ class CompositeFitness2(Fitness):
                         ret = max(ret, same*30)
                     else:
                         break
+                    k += 1
                         
         return ret
     def Speed(self, notes: np.ndarray):
@@ -118,11 +122,11 @@ class CompositeFitness2(Fitness):
         '''
         ret = 0
         self.bonus = 0
-        if self.Speed == 0:
+        if self.speed == 0:
             self.bonus = 1
-        if self.Speed == 1:
+        if self.speed == 1:
             self.bonus = 0.5
-        if self.Speed == 2:
+        if self.speed == 2:
             self.bonus = 0.25
         for i in range (0,len(notes)):
             if notes[i,1] == self.bonus:
