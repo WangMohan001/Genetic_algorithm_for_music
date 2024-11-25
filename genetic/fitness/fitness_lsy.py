@@ -68,17 +68,41 @@ class Fitness_example2(Fitness):
 
 
     def pitch_diff(self, reference_notes, music_notes):
-
+        # 计算音高差异
+        max_pitch = max(np.max(reference_notes[:, 0]), np.max(music_notes[:, 0]))
+        min_pitch = min(np.min(reference_notes[:, 0]), np.min(music_notes[:, 0]))
         pitch_differences = np.abs(reference_notes[:, 0] - music_notes[:, 0])
-        return np.mean(pitch_differences) 
+
+        # 归一化
+        if max_pitch != min_pitch:
+            normalized_differences = pitch_differences / (max_pitch - min_pitch)
+        else:
+            normalized_differences = pitch_differences  # 避免除以 0 的情况
+
+        # 计算相似度
+        pitch_similarity = 1 - np.mean(normalized_differences)
+        return max(0, min(1, pitch_similarity))  # 保证值在 [0, 1] 范围内
+
 
     def beat_diff(self,reference_notes, music_notes):
         return 0
     
     def duration_diff(self, reference_notes, music_notes):
-        # 计算节奏差异
+        # 计算持续时间差异
+        max_duration = max(np.max(reference_notes[:, 1]), np.max(music_notes[:, 1]))
+        min_duration = min(np.min(reference_notes[:, 1]), np.min(music_notes[:, 1]))
         duration_differences = np.abs(reference_notes[:, 1] - music_notes[:, 1])
-        return  np.mean(duration_differences)
+
+        # 归一化
+        if max_duration != min_duration:
+            normalized_differences = duration_differences / (max_duration - min_duration)
+        else:
+            normalized_differences = duration_differences  # 避免除以 0 的情况
+
+        # 计算相似度
+        duration_similarity = 1 - np.mean(normalized_differences)
+        return max(0, min(1, duration_similarity))  # 保证值在 [0, 1] 范围内
+
 
 
 
@@ -391,6 +415,9 @@ class CompositeFitness3(Fitness):
     def evaluate(self, music_piece: MusicPiece) -> float:
 
         # 计算每个特征的值
+        music_notes=music_piece.notes
+        if len(music_notes) == 0 or np.any(np.isnan(music_notes[:, 0])):
+            return float('-inf')  # 无效片段
         pitch_range_value = self.pitch_range(music_piece)
         note_density_value = self.Note_Density(music_piece)
         Repeated_Rhythm_Patterns_of_3_value=self.Repeated_Rhythm_Patterns_of_3(music_piece)
