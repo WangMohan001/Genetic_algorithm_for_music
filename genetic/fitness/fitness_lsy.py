@@ -4,152 +4,13 @@ from genetic.fitness.fitness import Fitness
 from genetic.item.music_piece import MusicPiece
 import numpy as np
 
-#给定一个参考个体
-segment = [60, 63, 64, 60, 69, 0, 67, 69, 300, 0, 700, 0, 60, 300, 71,60, 63, 64, 60, 69, 0, 67, 69, 300, 0, 700, 0, 60, 300, 71]
-def creat_reference1(rp_length:int =len(segment),rp_pace:float=0.5,rp_base_pitch:int =60,rp_beat:int =4):
-    reference_piece=MusicPiece(rp_length,rp_pace,rp_base_pitch,rp_beat)
-    for i, note in enumerate(segment):
-            if note == 0:  # 表示休止符
-                reference_piece.notes[i] = [0, int(rp_pace * 1000)]
-            elif note == 300 or note == 700:  # 表示节奏调整
-                reference_piece.notes[i] = [0, note]
-            else:
-                reference_piece.notes[i] = [note, int(rp_pace * 1000)]  # 音符和持续时间
-    return reference_piece
-
-#随机生成参考个体
-def creat_reference2(length=32, base_pitch=60, pace=0.5, beat=4):
-    music_piece = MusicPiece(length, pace, base_pitch, beat)
-    # 随机生成音符
-    for i in range(length):
-        # 随机生成音高 (可以调整范围)
-        pitch = np.random.choice(range(60, 73))  # 假设音高在60到72之间
-        # 随机生成持续时间
-        duration = np.random.choice([300, 700, int(pace * 1000)])  # 可以是固定值或按节奏调整
-        # 随机生成休止符
-        if np.random.random() < 0.2:  # 20%的概率是休止符
-            pitch = 0
-            duration = int(pace * 1000)  # 默认休止符持续时间
-        music_piece.notes[i] = [pitch, duration]
-    return music_piece
-
-#这是有参考个体的fitness函数
-class Fitness_example2(Fitness):
-    def __init__(self,reference_piece:MusicPiece=creat_reference2(),bad_notes:list=[50,51,52],w1:float=0.3,w2:float=0.1,w3:float=0.4,w4:float=0.2,sigma:float=0.1):
-        #初始化
-        self.reference_piece=reference_piece
-        self.w1=w1
-        self.w2=w2
-        self.w3=w3
-        self.w4=w4
-        self.sigma=sigma
-        self.bad_notes=bad_notes
-        
-
-    def normalize_notes(self,notes):
-        max_pitch = np.max(notes[:, 0])
-        min_pitch = np.min(notes[:, 0])
-        max_duration = np.max(notes[:, 1])
-        min_duration = np.min(notes[:, 1])
-        
-        # 将时值归一化到 [0, 1] 范围
-        if max_pitch!=min_pitch:
-            notes[:, 0] = (notes[:, 0] - min_pitch) /float((max_pitch - min_pitch))
-        if max_duration!=min_duration:
-            notes[:, 1] = (notes[:, 1] - min_duration) /float((max_duration - min_duration))
-        return notes
-    
-    def same_len(self,reference_notes,music_notes):
-        if len(music_notes) > len(reference_notes):
-            reference_notes = np.tile(reference_notes, (len(music_notes) // len(reference_notes) + 1, 1))[:len(music_notes)]
-        elif len(music_notes) < len(reference_notes):
-            music_notes = np.tile(music_notes, (len(reference_notes) // len(music_notes) + 1, 1))[:len(reference_notes)]
-        return reference_notes,music_notes
-
-
-    def pitch_diff(self, reference_notes, music_notes):
-        # 计算音高差异
-        max_pitch = max(np.max(reference_notes[:, 0]), np.max(music_notes[:, 0]))
-        min_pitch = min(np.min(reference_notes[:, 0]), np.min(music_notes[:, 0]))
-        pitch_differences = np.abs(reference_notes[:, 0] - music_notes[:, 0])
-
-        # 归一化
-        if max_pitch != min_pitch:
-            normalized_differences = pitch_differences / (max_pitch - min_pitch)
-        else:
-            normalized_differences = pitch_differences  # 避免除以 0 的情况
-
-        # 计算相似度
-        pitch_similarity = 1 - np.mean(normalized_differences)
-        return max(0, min(1, pitch_similarity))  # 保证值在 [0, 1] 范围内
-
-
-    def beat_diff(self,reference_notes, music_notes):
-        return 0
-    
-    def duration_diff(self, reference_notes, music_notes):
-        # 计算持续时间差异
-        max_duration = max(np.max(reference_notes[:, 1]), np.max(music_notes[:, 1]))
-        min_duration = min(np.min(reference_notes[:, 1]), np.min(music_notes[:, 1]))
-        duration_differences = np.abs(reference_notes[:, 1] - music_notes[:, 1])
-
-        # 归一化
-        if max_duration != min_duration:
-            normalized_differences = duration_differences / (max_duration - min_duration)
-        else:
-            normalized_differences = duration_differences  # 避免除以 0 的情况
-
-        # 计算相似度
-        duration_similarity = 1 - np.mean(normalized_differences)
-        return max(0, min(1, duration_similarity))  # 保证值在 [0, 1] 范围内
-
-
-
-
-    
-    def rest_diff(self,reference_notes,music_notes):
-        #计算休止符差异
-        rest_matches = np.sum(
-            (reference_notes[:, 0] == 0) == (music_notes[:, 0] ==0)
-        )
-        rest_similarity = rest_matches / len(reference_notes)
-        return rest_similarity
-    
-    def bad_note_diff(self,music_notes):
-        bad_note_count = np.sum(np.isin(music_notes[:, 0], self.bad_notes))
-        return 1 - (bad_note_count / len(music_notes))
-
-
-
-    def evaluate(self, music_piece: MusicPiece) -> float:
-        val=0
-        reference_notes = self.reference_piece.get_notes()
-        music_notes = music_piece.get_notes()
-        #reference_notes = self.normalize_notes(reference_notes)
-        #music_notes = self.normalize_notes(music_notes)
-        if len(music_notes) == 0 or np.any(np.isnan(music_notes[:, 0])):
-            return float('-inf')  # 无效片段
-        reference_notes,music_notes=self.same_len(reference_notes,music_notes)
-        val1=self.pitch_diff(reference_notes,music_notes)
-        val2=self.beat_diff(reference_notes,music_notes)
-        val3=self.duration_diff(reference_notes,music_notes)
-        val4=self.rest_diff(reference_notes,music_notes)
-        val = (self.w1 * val1 + self.w2 * val2 + self.w3 * val3 + self.w4 * val4)
-    
-        #print(self.pitch_diff(reference_notes,music_notes),self.duration_diff(reference_notes,music_notes))
-        return val
-'''
-快节奏，情感强烈的音乐：音高范围广，高音符密度，节奏多样性强，高潮音符强烈，轮廓方向多变，轮廓稳定性低
-慢节奏，安静的音乐：与上面相反
-悲伤的：轮廓方向主要下降，轮廓稳定性中等偏高
-欢快的：轮廓方向上升为主，高潮音符温和，协和音程比例高
-'''
 '''
 type = input("Please choose the type for the music (classical/early/nursery): ").strip().lower()
     while type not in ['classical', 'early','nursery']:
         print("Invalid input! ")
         type = input("Please choose the type for the music (classical/early/nursery): ").strip().lower()
 '''#可以将其添加到main.py中实现一个简单的交互
+
 class CompositeFitness3(Fitness):
     def __init__(self,type:str="classical"):
         #初始化
@@ -161,52 +22,51 @@ class CompositeFitness3(Fitness):
         if self.type == 'classical':
             # 对于classical
             return {
-                "pitch_range": 0.15,
+                "pitch_range": 1.5,
                 #"dissonant_intervals": -0.5,
                 #"contour_stability": 1.0,
-                "note_density": 0.20,
+                "note_density": 2,
                 #"rhythmic_variety": 0.6,
                 #"contour_direction": 0.1,
-                "Repeated_Rhythm_Patterns_of_3":0.05,
-                "Repeated_Rhythm_Patterns_of_4":0.05,
-                "Movement_by_Step":0.18,
-                "repeated_pitch_patterns_3":0.07,
-                "repeated_pitch_patterns_4":0.05,
-                "repeated_duration":0.15
+                "Repeated_Rhythm_Patterns_of_3":0.5,
+                "Repeated_Rhythm_Patterns_of_4":0.5,
+                "Movement_by_Step":1.8,
+                "repeated_pitch_patterns_3":0.7,
+                "repeated_pitch_patterns_4":0.5,
+                "repeated_duration":1.5
                 
-
             }
         elif self.type == 'early':
             # early
             return {
-                "pitch_range": 0.12,
+                "pitch_range": 1.2,
                 #"dissonant_intervals": -0.5,
                 #"contour_stability": 1.0,
-                "note_density": 0.18,
+                "note_density": 1.8,
                 #"rhythmic_variety": 0.6,
                 #"contour_direction": 0.1,
-                "Repeated_Rhythm_Patterns_of_3":0.08,
-                "Repeated_Rhythm_Patterns_of_4":0.07,
-                "Movement_by_Step":0.15,
-                "repeated_pitch_patterns_3":0.10,
-                "repeated_pitch_patterns_4":0.08,
-                "repeated_duration":0.15
+                "Repeated_Rhythm_Patterns_of_3":0.8,
+                "Repeated_Rhythm_Patterns_of_4":0.7,
+                "Movement_by_Step":1.5,
+                "repeated_pitch_patterns_3":1.0,
+                "repeated_pitch_patterns_4":0.8,
+                "repeated_duration":1.5
             }
         elif self.type=='nursery':
             # nursery
             return {
-                "pitch_range": 0.12,
+                "pitch_range": 1.2,
                 #"dissonant_intervals": -0.5,
                 #"contour_stability": 1.0,
-                "note_density": 0.15,
+                "note_density": 1.5,
                 #"rhythmic_variety": 0.6,
                 #"contour_direction": 0.1,
-                "Repeated_Rhythm_Patterns_of_3":0.10,
-                "Repeated_Rhythm_Patterns_of_4":0.08,
-                "Movement_by_Step":0.15,
-                "repeated_pitch_patterns_3":0.10,
-                "repeated_pitch_patterns_4":0.08,
-                "repeated_duration":0.12
+                "Repeated_Rhythm_Patterns_of_3":1.0,
+                "Repeated_Rhythm_Patterns_of_4":0.8,
+                "Movement_by_Step":1.5,
+                "repeated_pitch_patterns_3":1.0,
+                "repeated_pitch_patterns_4":0.8,
+                "repeated_duration":1.2
             }
     
     def calculate_intervals(self,music_piece:MusicPiece):
@@ -439,9 +299,110 @@ class CompositeFitness3(Fitness):
         score += self.weights["repeated_pitch_patterns_3"] * repeated_pitch_patterns_4_value
         score += self.weights["repeated_duration"] *repeated_duration
 
-        total_weight = sum(abs(weight) for weight in self.weights.values())
-        normalized_score = score / total_weight if total_weight > 0 else 0
+        #total_weight = sum(abs(weight) for weight in self.weights.values())
+        #normalized_score = score / total_weight if total_weight > 0 else 0
 
-        return normalized_score
+        return score
 
            
+
+
+
+
+
+
+
+#随机生成参考个体
+def creat_reference(length=32, base_pitch=60, pace=0.5, beat=4):
+    music_piece = MusicPiece(length, pace, base_pitch, beat)
+    # 随机生成音符
+    for i in range(length):
+        # 随机生成音高 (可以调整范围)
+        pitch = np.random.choice(range(60, 73))  # 假设音高在60到72之间
+        # 随机生成持续时间
+        duration = np.random.choice([300, 700, int(pace * 1000)])  # 可以是固定值或按节奏调整
+        # 随机生成休止符
+        if np.random.random() < 0.2:  # 20%的概率是休止符
+            pitch = 0
+            duration = int(pace * 1000)  # 默认休止符持续时间
+        music_piece.notes[i] = [pitch, duration]
+    return music_piece
+
+
+class Fitness_example2(Fitness):
+    def __init__(self,reference_piece:MusicPiece=creat_reference(),bad_notes:list=[50,51,52],w1:float=0.7,w2:float=0,w3:float=0.5,w4:float=0.7,sigma:float=0.1):
+        #初始化
+        self.reference_piece=reference_piece
+        self.w1=w1
+        self.w2=w2
+        self.w3=w3
+        self.w4=w4
+        self.sigma=sigma
+        self.bad_notes=bad_notes
+        
+
+    
+    def same_len(self,reference_notes,music_notes):
+        if len(music_notes) > len(reference_notes):
+            reference_notes = np.tile(reference_notes, (len(music_notes) // len(reference_notes) + 1, 1))[:len(music_notes)]
+        elif len(music_notes) < len(reference_notes):
+            music_notes = np.tile(music_notes, (len(reference_notes) // len(music_notes) + 1, 1))[:len(reference_notes)]
+        return reference_notes,music_notes
+
+
+    def pitch_diff(self, reference_notes, music_notes):
+    # 计算音符音高的差异
+        music_notes = np.nan_to_num(music_notes, nan=0)  # 将 NaN 转换为 0
+        valid_indices = ~np.isnan(reference_notes[:, 0]) & ~np.isnan(music_notes[:, 0])  # 筛选有效音符
+        
+        # 计算音高差异
+        pitch_differences = np.abs(reference_notes[valid_indices, 0] - music_notes[valid_indices, 0])
+        
+        pitch_similarity = 1 - np.mean(pitch_differences)
+        
+        return pitch_similarity 
+
+    def beat_diff(self,reference_notes, music_notes):
+        return 0
+    def duration_diff(self, reference_notes, music_notes):
+        # 计算节奏差异
+        duration_differences = np.abs(reference_notes[:, 1] - music_notes[:, 1])
+        duration_similarity = 1 - (np.sum(duration_differences) / len(reference_notes))
+        
+        return duration_similarity  # 保证相似度在[0,1]区间内
+
+
+
+    
+    def rest_diff(self,reference_notes,music_notes):
+        #计算休止符差异
+        rest_matches = np.sum(
+            (reference_notes[:, 0] == 0) == (music_notes[:, 0] ==0)
+        )
+        rest_similarity = rest_matches / len(reference_notes)
+        return rest_similarity
+    
+    def bad_note_diff(self,music_notes):
+        bad_note_count = np.sum(np.isin(music_notes[:, 0], self.bad_notes))
+        return -bad_note_count
+    
+
+
+
+    def evaluate(self, music_piece: MusicPiece) -> float:
+        val=0
+        reference_notes = self.reference_piece.get_notes()
+        music_notes = music_piece.get_notes()
+        #reference_notes=self.normalize_notes(reference_notes)
+        #music_notes=self.normalize_notes(music_notes)
+        if len(music_notes) == 0 or np.any(np.isnan(music_notes[:, 0])):
+            return float('-inf')  # 无效片段
+        reference_notes,music_notes=self.same_len(reference_notes,music_notes)
+        total_weight = self.w1 + self.w2 + self.w3 + self.w4
+        val=(self.w1*self.pitch_diff(reference_notes,music_notes)+\
+                self.w2*self.beat_diff(reference_notes,music_notes)+\
+                self.w3*self.duration_diff(reference_notes,music_notes)+\
+                    self.w4*self.rest_diff(reference_notes,music_notes))+1/self.sigma*self.bad_note_diff(music_notes)
+        #print(self.pitch_diff(reference_notes,music_notes),self.duration_diff(reference_notes,music_notes))
+        return val
+
