@@ -2,6 +2,8 @@ import argparse
 from genetic.algorithm.genetic_algorithm import Genetic_algorithm
 from genetic.inherit.mutate_example import Mutate_example
 from genetic.inherit.crossover_example import Crossover_example
+from genetic.inherit.crossover import Crossover
+from genetic.inherit.mutate import Mutate
 from genetic.item.music_piece import MusicPiece
 from genetic.fitness.fitness_example import Fitness_example
 from genetic.fitness.fitness_all import Fitness_all
@@ -44,8 +46,8 @@ def main():
     genetic_algorithm = Genetic_algorithm(
         NRoundTerminator(15), 
         Fitness_all(), 
-        Mutate_example(), 
-        Crossover_example(), 
+        Mutate(), 
+        Crossover(), 
         Initial_example(), 
         config_path
     )

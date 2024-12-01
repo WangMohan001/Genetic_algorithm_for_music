@@ -25,6 +25,9 @@ class MusicPiece:
     
     def get_beat(self):
         return self.beat
+    
+    def get_note_length(self):
+        return self.notes.shape[0]
 
     # append another music piece to the end of the current music piece
     def append(self, music_piece: 'MusicPiece'):
@@ -54,10 +57,18 @@ class MusicPiece:
         return music_piece
 
     # invert the music piece(playing the music piece upside down, i.e., the pitch of the notes are mirrored around the base pitch)
-    def invert(self)-> 'MusicPiece':
+    def invert(self,base_note:int=0)-> 'MusicPiece':
         music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
         music_piece.notes = self.notes.copy()
-        music_piece.notes[:, 0] = music_piece.notes[:, 0]
+        base_pitch = self.notes[base_note][0]
+        for i in range(len(self.notes)):
+            new_pitch = 2 * base_pitch - self.notes[i][0]
+            # 确保生成的音高不会异常高
+            if new_pitch >30:  # 限制最大音高（例如 MIDI 的最大音高是 127）
+                new_pitch =10
+            elif new_pitch <-30:  # 限制最低音高
+                new_pitch = -10
+            music_piece.notes[i, 0] = new_pitch
         return music_piece
 
     # transpose the music piece by a given interval, i.e., shift the pitch of the notes by the given interval
@@ -68,11 +79,10 @@ class MusicPiece:
         return music_piece
 
     #retrograde and invert the music piece at the same time
-    def retrograde_invert(self)-> 'MusicPiece':
+    def retrograde_invert(self,base_note:int=0)-> 'MusicPiece':
         music_piece = MusicPiece(self.length, self.pace, self.base_pitch)
         music_piece.notes = np.flip(self.notes, axis=0)
-        music_piece.notes[:, 0] = - music_piece.notes[:, 0]
-        return music_piece
+        return self.invert(base_note)
 
     # get a part of the music piece, starting from the start-th note and ending at the end-th note
     def get_part(self, start: int, end: int)-> 'MusicPiece':
