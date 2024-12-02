@@ -8,6 +8,18 @@ class Mutate(ABC):
         pass
 
     #mutate a music piece
-    @abstractmethod
+    #music_piece中相应function已修改
     def mutate(self, music_piece: MusicPiece) -> MusicPiece:
-        pass
+        mutation_operators = [self.retrograde_mutate, self.invert_mutate, 
+                              self.transpose_mutate, self.retrograde_invert_mutate]
+        chosen_mutation = random.choice(mutation_operators)
+        return chosen_mutation(music_piece)
+    def retrograde_mutate(self,music_piece: MusicPiece):
+        return music_piece.retrograde() 
+    def invert_mutate(self,music_piece:MusicPiece):
+        return music_piece.invert(random.randint(0,music_piece.get_length()-1))
+    def transpose_mutate(self,music_piece:MusicPiece):
+        return music_piece.transpose(random.randint(-2, 2))
+    def retrograde_invert_mutate(self,music_piece:MusicPiece):
+        return music_piece.retrograde_invert(random.randint(0,music_piece.get_length()-1))
+    
