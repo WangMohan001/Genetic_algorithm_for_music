@@ -5,5 +5,5 @@
     "discard_rate": 0.3,
     "temperature": 1.0,
     "temperature_decay": 0.99,
-    "round_num" : 10
+    "round_num" : 100
 }
