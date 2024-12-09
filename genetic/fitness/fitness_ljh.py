@@ -1,8 +1,6 @@
 from genetic.fitness.fitness import Fitness
 from genetic.item.music_piece import MusicPiece
 import numpy as np
-from genetic.fitness.fitness import Fitness
-import numpy as np
 
 class FitnessChineseMusic(Fitness):
     def __init__(self, OmegaMode: float = 0.1, OmegaMelody: float = 0.3, OmegaTonic: float = 0.3):
