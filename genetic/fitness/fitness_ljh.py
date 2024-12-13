@@ -18,7 +18,7 @@ class FitnessChineseMusic(Fitness):
 
     def evaluate(self, music_piece):
         notes = music_piece.get_notes()
-        if len(notes) == 0 or len(notes) >20 or all(np.isnan(note[0]) for note in notes):
+        if len(notes) == 0 or all(np.isnan(note[0]) for note in notes):
             return float('-inf')  # 无效片段
 
         fitness = 0
