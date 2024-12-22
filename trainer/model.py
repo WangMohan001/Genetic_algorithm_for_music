@@ -1,8 +1,5 @@
 import torch
 import torch.nn as nn
-from genetic.fitness.fitness import Fitness
-from genetic.item.music_piece import MusicPiece
-import numpy as np
 
 class MelodyLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -48,26 +45,3 @@ class MelodyLSTM(nn.Module):
         output = self.sigmoid(output)  # (batch_size, 1)
         
         return output
-class Fitness_LSTM(Fitness):
-    def __init__(self):
-        self.model = MelodyLSTM(24, 64, 1)
-        self.model.load_state_dict(torch.load('genetic/models/checkpoint_LSTM.pt'))
-        self.model.eval()
-    def evaluate(self, music_piece: MusicPiece) -> float:
-        data = music_piece.get_notes()
-        base = np.min(data)
-        seq_len = 10
-        input_size = 24
-        scores = []
-        for i in range(data.shape[0] - seq_len + 1):
-            seq = data[i:i + seq_len,0]
-            score = np.zeros((seq_len, input_size))
-            for j in range(seq_len):
-                score[j, min(input_size - 1, int(seq[j] - base))] = 1
-            scores.append(score)
-        if len(scores) == 0:
-            return 0
-        scores = np.array(scores)
-        scores = torch.tensor(scores).float()
-        outputs = self.model(scores)
-        return outputs.mean().item()
