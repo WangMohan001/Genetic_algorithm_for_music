@@ -6,7 +6,7 @@ from genetic.inherit.crossover import Crossover
 from genetic.inherit.mutate import Mutate
 from genetic.item.music_piece import MusicPiece
 from genetic.fitness.fitness_example import Fitness_example
-from genetic.fitness.fitness_lstm import Fitness_LSTM
+from genetic.fitness.fitness_transformer import Fitness_Transformer
 from genetic.fitness.fitness_merged import MergedFitness
 from genetic.initial.initial_example_new import Initial_example
 from genetic.terminator.n_round_terminator import NRoundTerminator
@@ -46,7 +46,7 @@ def main():
     # 初始化遗传算法
     genetic_algorithm = Genetic_algorithm(
         NRoundTerminator(100), 
-        MergedFitness(), 
+        Fitness_Transformer(), 
         Mutate(), 
         Crossover(), 
         Initial_example(), 
