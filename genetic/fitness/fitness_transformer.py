@@ -78,11 +78,11 @@ class Fitness_Transformer(Fitness):
         hidden_size = 64
         output_size = 1
         num_heads = 4
-        num_layers = 2
+        num_layers = 4
         seq_len = 10
         
         self.model = MelodyTransformer(input_size, hidden_size, output_size, num_heads, num_layers, seq_len)
-        self.model.load_state_dict(torch.load('genetic/models/checkpoint_10.pt'))
+        self.model.load_state_dict(torch.load('genetic/models/checkpoint_Transformer.pt'))
         self.model.eval()
 
     def evaluate(self, music_piece: MusicPiece) -> float:
@@ -112,4 +112,4 @@ class Fitness_Transformer(Fitness):
         scores = np.array(scores)
         scores = torch.tensor(scores).float()
         outputs = self.model(scores)
-        return outputs.mean().item()
+        return outputs.mean().item()  
